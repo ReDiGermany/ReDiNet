@@ -1,0 +1,52 @@
+.root {
+    -fx-background-color: #2b2b2b;
+}
+.navigationButton {
+    -fx-background-color: transparent;
+    -fx-background-position: center;
+    -fx-background-size: 15px;
+    -fx-background-repeat: no-repeat;
+    -fx-background-radius: 50%;
+    -fx-min-width: 25px;
+    -fx-min-height: 25px;
+    -fx-max-width: 25px;
+    -fx-max-height: 25px;
+    -fx-opacity: 1;
+}
+.navigationButton:hover {
+    -fx-opacity: .5;
+}
+.navigationButton:disabled {
+    -fx-opacity: .1;
+}
+.urlBar {
+    -fx-background-color: #3c3f41;
+    -fx-text-fill: #ffffff;
+}
+.bookmark {
+    -fx-background-color: #3c3f41;
+    -fx-text-fill: #ffffff;
+}
+#tabPane {
+    -fx-background: transparent;
+}
+.tabBtn:not(#newTab) {
+
+    -fx-background-color: #111111;
+}
+.tabBtn#newTab {
+    -fx-text-fill: #ffffff;
+    -fx-background-color: transparent;
+    -fx-background-position: center;
+    -fx-background-size: 10px;
+    -fx-background-repeat: no-repeat;
+    -fx-min-width: 25px;
+    -fx-min-height: 25px;
+    -fx-max-width: 25px;
+    -fx-max-height: 25px;
+}
+.bookmark-text {
+    -fx-text-fill: #ffffff;
+    -fx-padding: 10 15;
+    -fx-cursor: pointer;
+}
