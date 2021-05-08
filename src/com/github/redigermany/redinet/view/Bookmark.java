@@ -3,10 +3,14 @@ package com.github.redigermany.redinet.view;
 import com.github.redigermany.redinet.controller.MainLayout;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.control.MenuItem;
+import javafx.scene.input.*;
 import javafx.scene.layout.Pane;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Bookmark extends Pane {
     private String name;
@@ -27,16 +31,53 @@ public class Bookmark extends Pane {
         getStyleClass().add("bookmark");
         text.getStyleClass().add("bookmark-text");
         getChildren().add(text);
-        setOnMouseClicked(e->{
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem openBookmark = new MenuItem("Open");
+        MenuItem copyAddress = new MenuItem("Copy URL");
+        MenuItem openInNewTab = new MenuItem("Open in new Tab");
+        MenuItem openInNewWindow = new MenuItem("Open in new Window");
+        MenuItem deleteBookmark = new MenuItem("Delete Bookmark");
+        contextMenu.getItems().addAll(openBookmark,copyAddress,openInNewTab,openInNewWindow,deleteBookmark);
+
+        copyAddress.setOnAction(e->{
+            Clipboard clipboard = Clipboard.getSystemClipboard();
+
+            Map<DataFormat, Object> content = new HashMap<>();
+            content.put(DataFormat.PLAIN_TEXT,url);
+            clipboard.setContent(content);
+            System.out.println("Copy to clipboard");
+//            stage.setTab(url);
+        });
+
+        openBookmark.setOnAction(e->{
+            stage.setTab(url);
+        });
+
+        openInNewTab.setOnAction(e->{
+            stage.newTab(url);
+        });
+
+        openInNewWindow.setOnAction(e->{
+            stage.newWindow(url);
+        });
+
+        deleteBookmark.setOnAction(e->{
+            stage.getBookmarkController().removeBookmark(url);
+        });
+        setOnContextMenuRequested(e->{
+            e.consume();
+            contextMenu.show(this,e.getScreenX(),e.getScreenY());
+        });
+        addEventHandler(MouseEvent.MOUSE_CLICKED,e->{
+            if(e.getButton()==MouseButton.SECONDARY) return;
             boolean inNewTab = e.isControlDown() || e.getButton()== MouseButton.MIDDLE;
             boolean inNewWindow = e.isShiftDown();
-            System.out.printf("Opening %s in %s%n",url,inNewTab?"new tab":(inNewWindow?"new window":"same tab"));
             if(inNewTab){
                 stage.newTab(url);
             }else if(inNewWindow){
-                //TODO: Open in new Window
-            }else{
-                //TODO: Open in current Tab
+                stage.newWindow(url);
+            }else if(e.getButton()==MouseButton.PRIMARY){
+                stage.setTab(url);
             }
         });
 //        setOnAction(e->{
