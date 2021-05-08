@@ -1,9 +1,75 @@
 <!DOCTYPE HTML>
 <html>
-<head>
-    <title>ReDiNet :: New Tab</title>
-</head>
-<body>
-<h1>new Tab?!?</h1>
-</body>
+	<head>
+	    <title>ReDiNet :: New Tab</title>
+		<meta charset="utf-8">
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+				text-align: center;
+				background: #111;
+				color: rgba(255,255,255,.5);
+				font-family: arial;
+			}
+			div {
+			    position: absolute;
+			    top: 50%;
+			    left: 50%;
+			    transform: translate(-50%,-50%);
+			}
+			input {
+			    background: #202020;
+			    height: 50px;
+			    line-height: 50px;
+			    width: calc( 200% - 40px );
+			    left: -50%;
+			    position: relative;
+			    border: 1px solid rgba(255,255,255,.2);
+			    border-radius: 25px;
+			    color: rgba(255,255,255,.5);
+			    font-size: 20px;
+			    padding: 0 20px;
+				outline: none !important;
+			}
+			input:focus {
+			    border: 1px solid rgba(255,255,255,.4);
+			}
+			input::placeholder {
+			    color: rgba(255,255,255,.2);
+			}
+		</style>
+	</head>
+	<body>
+		<div>
+			<h1>Willkommen zurück!</h1>
+			<h4>wünscht ReDiNet</h4>
+			<h2>00:00:00</h2>
+			<h3>00.00.0000</h3>
+			<form action="https://www.google.com/search" method="get">
+				<input placeholder="search on google" class="form-control" type="text" name="q" autofocus="" />
+			</form>
+		</div>
+		<script>
+			function nullIfy(d){
+				return (d<10?"0":"")+d;
+			}
+			function load(){
+				console.log("load")
+				var currentdate = new Date(); 
+    			document.getElementsByTagName("h2")[0].innerHTML = [
+    				nullIfy(currentdate.getHours()),
+    				nullIfy(currentdate.getMinutes()),
+    				nullIfy(currentdate.getSeconds())
+    			].join(":");
+    			document.getElementsByTagName("h3")[0].innerHTML = [
+    				nullIfy(currentdate.getDate()),
+    				nullIfy(currentdate.getMonth()+1),
+    				nullIfy(currentdate.getFullYear())
+    			].join(".");
+			}
+			setInterval(load,1000);
+			load();
+		</script>
+	</body>
 </html>

@@ -12,6 +12,7 @@
     -fx-max-width: 25px;
     -fx-max-height: 25px;
     -fx-opacity: 1;
+    -fx-padding: 5px;
 }
 .navigationButton:hover {
     -fx-opacity: .5;
@@ -19,11 +20,30 @@
 .navigationButton:disabled {
     -fx-opacity: .1;
 }
+.urlpopupitem {
+    -fx-background-color: #3c3f41;
+    -fx-min-height: 25px;
+    -fx-max-height: 25px;
+    -fx-pref-height: 25px;
+    -fx-text-fill: white;
+}
 .urlBar {
+    -fx-padding: 5px;
     -fx-background-color: #3c3f41;
     -fx-text-fill: #ffffff;
+    -fx-background-radius: 25px;
+    -fx-cursor: text;
+}
+.urlBar.secure {
+    -fx-padding: 5 5 5 30;
+    -fx-background-image: url(../../../../../UI/shield-alt-solid.png);
+    -fx-background-position: 10px 7px;
+    -fx-background-size: 15px;
+    -fx-background-repeat: no-repeat;
+    -fx-background-padding: 5px;
 }
 .bookmark {
+    -fx-margin-left: -30;
     -fx-background-color: #3c3f41;
     -fx-text-fill: #ffffff;
 }
@@ -44,9 +64,91 @@
     -fx-min-height: 25px;
     -fx-max-width: 25px;
     -fx-max-height: 25px;
+    -fx-padding: 0 10;
 }
 .bookmark-text {
-    -fx-text-fill: #ffffff;
-    -fx-padding: 10 15;
-    -fx-cursor: pointer;
+    -fx-text-fill: rgba(255,255,255,.5);
+    -fx-background-color: #2b2b2b;
+    -fx-padding: 5 10;
+    -fx-cursor: hand;
+}
+.bookmark-text:hover,.bookmark-text.active {
+    -fx-text-fill: rgba(255,255,255,.8);
+}
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: #2b2b2b;
+}
+.tab-pane .tab-header-area .tab {
+    -fx-background-color: #2b2b2b;
+    -fx-text-base-color: rgba(255,255,255,.5);
+    -fx-margin: 0 10;
+    -fx-padding: 5;
+}
+.tab .tab-label {
+    -fx-padding: 0 15;
+}
+.tab-pane .tab-header-area .tab:hover {
+    -fx-background-color: #3c3f41;
+    -fx-text-base-color: rgba(255,255,255,.8);
+}
+.tab-pane .tab-header-area .tab:selected {
+    -fx-background-color: #3c3f41;
+    -fx-text-base-color: rgba(255,255,255,.8);
+    -jfx-rippler-fill: Yellow;
+}
+.tab-pane .tab-header-area .tab-close-button {
+    -fx-background-color: rgba(255,255,255,.3);
+}
+.tab-pane .tab-header-area .tab-close-button:hover {
+    -fx-background-color: rgba(255,255,255,1);
+    -fx-cursor: hand;
+}
+.urlContextMenu {
+    -fx-background-color: #3c3f41;
+}
+.urlContextMenu {
+    -fx-text-fill: white;
+}
+
+.urlContextMenu .menu-item .label {
+    -fx-text-fill: rgba(255,255,255,.5);
+}
+
+.urlContextMenu .menu-item:focused .label {
+    -fx-text-fill: rgba(255,255,255,1);
+}
+.urlContextMenu .menu-item:focused {
+    -fx-background-color: rgba(0,0,0,.2);
+}
+#progressLabel {
+    -fx-text-fill: rgba(255,255,255,.5);
+    -fx-padding: 2;
+}
+#progressBar {
+    -fx-padding: 9px;
+    -fx-box-border: #000000;
+    -fx-background-radius: 0;
+    -fx-accent: #ffffff;
+}
+#progressBar .track {
+    -fx-background-color: rgba(255,255,255,.1);
+}
+#progressBar .bar {
+    -fx-padding: 1px;
+    -fx-background-insets: 0;
+}
+#autocompleteBar {
+    -fx-background-color: #3c3f41;
+    -fx-padding: 25 0 0 0;
+    -fx-translate-x: -1500px;
+    -fx-translate-y: 15px;
+}
+#autocompleteBar .item {
+    -fx-padding: 0 5;
+    -fx-height: 25px;
+    -fx-min-height: 25px;
+    -fx-max-height: 25px;
+    -fx-pref-height: 25px;
+    -fx-background-color: rgba(255,255,255,.1);
+    -fx-text-fill: white;
 }
