@@ -23,6 +23,8 @@
         <NavigationButton fx:id="forwBtn" imageUrl="arrow-right-solid.png" />
         <NavigationButton fx:id="reloadBtn" imageUrl="arrow-reload-solid.png" />
         <TextField viewOrder="-Infinity" fx:id="urlBar" styleClass="urlBar">URL</TextField>
+        <NavigationButton fx:id="goBtn" imageUrl="directions-solid.png" />
+        <NavigationButton fx:id="homeBtn" imageUrl="home-solid.png" />
         <NavigationButton fx:id="bookmarkBtn" imageUrl="star-empty-solid.png" />
         <NavigationButton fx:id="menuBtn" imageUrl="menu-solid.png" />
     </HBox>
