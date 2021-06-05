@@ -2,8 +2,8 @@
 
 ## Own
 Todo:
-- [] Model implementieren
-- [] Views (z.B. Settings oder History view)
+- [ ] Model implementieren
+- [ ] Views (z.B. Settings oder History view)
 
 ## Officials
 
