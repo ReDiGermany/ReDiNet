@@ -120,9 +120,7 @@ public class Main extends Application {
     @Override
     public void start(Stage stage)  {
         Tab tab = new Tab("+");
-        tab.setOnSelectionChanged(e->{
-            newTab();
-        });
+        tab.setOnSelectionChanged(e->{newTab();});
         tab.setClosable(false);
         tabPane.getTabs().add(tab);
         primaryStage = stage;
