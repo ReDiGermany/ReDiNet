@@ -7,9 +7,11 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -18,10 +20,7 @@ import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebHistory;
 import javafx.stage.*;
@@ -37,9 +36,11 @@ public class MainLayout extends Application {
     @FXML private NavigationButton prevBtn;
     @FXML private NavigationButton forwBtn;
     @FXML private NavigationButton reloadBtn;
+    @FXML private NavigationButton goBtn;
     @FXML private TextField urlBar;
     @FXML private NavigationButton bookmarkBtn;
     @FXML private NavigationButton menuBtn;
+    @FXML private NavigationButton homeBtn;
     @FXML private WebTab newTab;
     @FXML private TabPane tabPane;
     @FXML private HBox bookmarks;
@@ -55,6 +56,7 @@ public class MainLayout extends Application {
     private final Logger logger = new Logger(Logger.TYPES.NONE);
     private String initUrl;
     private double urlBarWidth;
+    private boolean urlBarChanged = false;
 
     public BookmarkController getBookmarkController() {
         return bc;
@@ -87,7 +89,7 @@ public class MainLayout extends Application {
 
     public void newTab(String url){
         setBarStatus(0);
-        WebTab tab = new WebTab(primaryStage);
+        WebTab tab = new WebTab(windowState,primaryStage);
         if(url!=null) tab.setUrl(url);
         tabPane.getTabs().add(tabPane.getTabs().size()-1,tab);
         SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
@@ -157,17 +159,25 @@ public class MainLayout extends Application {
         }
 
         initBaseLayout();
+        openAbout();
     }
 
     private void initBaseLayout() {
         initPrevButton();
         initForwButton();
         initReloadButton();
+        initGoBtn();
+        initHomeBtn();
         initUrlBar();
         initBookmarkButton();
         initMenuButton();
         tabPane.getSelectionModel().selectedItemProperty().addListener((ov, t, t1) -> {
-            initUpdateTabInfo((WebTab) t1);
+            try {
+                initUpdateTabInfo((WebTab) t1);
+            }catch (Exception e){
+                if(!e.getMessage().startsWith("class javafx.scene.control.Tab cannot be cast to class com.github.redigermany.redinet.view.WebTab"))
+                    e.printStackTrace();
+            }
         });
         initUpdateTabInfo(getCurrentTab());
         newTab.setOnSelectionChanged(e->{
@@ -197,6 +207,24 @@ public class MainLayout extends Application {
             getCurrentTab().reload();
         });
     }
+    private void initGoBtn(){
+        goBtn.setOnAction(e->{
+            urlBarChanged = false;
+            String url="";
+            if(urlContextMenuSelected==0){
+                url = "https://www.google.com/search?q="+urlBar.getText();
+            }else{
+                url = urlContextMenu.getItems().get(urlContextMenuSelected).getText();
+            }
+            getCurrentTab().setUrl(url);
+            urlContextMenu.hide();
+        });
+    }
+    private void initHomeBtn(){
+        homeBtn.setOnAction(e->{
+            getCurrentTab().setUrl(windowState.getStartPage());
+        });
+    }
 
     private void showUrlBarAutocomplete(){
         urlContextMenu.show(primaryStage,primaryStage.getX()+urlBar.getLayoutX()+35,primaryStage.getY()+urlBar.getLayoutY()+60);
@@ -210,9 +238,18 @@ public class MainLayout extends Application {
             showUrlBarAutocomplete();
         });
         urlBar.addEventFilter(KeyEvent.KEY_RELEASED,e->{
+            boolean isUrl = urlBar.getText().matches("[a-zA-Z0-9-_\\.]+\\.[a-zA-Z]+");
+
             if(e.getCode() == KeyCode.ENTER){
+                urlBarChanged = false;
                 String url="";
-                if(urlContextMenuSelected==0){
+                if(urlContextMenuSelected==0 && isUrl) {
+                    url = urlBar.getText();
+                    if(!url.matches("(http|https)://")){
+                        url = "http://"+url;
+                    }
+
+                }else if(urlContextMenuSelected==0 && !isUrl || urlContextMenuSelected==1 && isUrl) {
                     url = "https://www.google.com/search?q="+urlBar.getText();
                 }else{
                     url = urlContextMenu.getItems().get(urlContextMenuSelected).getText();
@@ -220,6 +257,7 @@ public class MainLayout extends Application {
                 getCurrentTab().setUrl(url);
                 urlContextMenu.hide();
             }else{
+                urlBarChanged = true;
                 if(e.getCode()==KeyCode.DOWN){
                     urlContextMenuSelected++;
                     if(urlContextMenuSelected==urlContextMenu.getItems().size()){
@@ -259,6 +297,11 @@ public class MainLayout extends Application {
                 else {
                     ArrayList<String> historyLog = HistoryController.getInstance().search(urlBar.getText());
                     ArrayList<MenuItem> urlContextMenuItems = new ArrayList<>();
+
+//                    System.out.println(urlBar.getText()+" should be "+(isUrl?"website":"google search")+"; isUrl="+isUrl);
+                    if(isUrl){
+                        urlContextMenuItems.add(new MenuItem("Go to: "+urlBar.getText()));
+                    }
                     urlContextMenuItems.add(new MenuItem("Google search: "+urlBar.getText()));
                     for(String historyItem:historyLog){
                         urlContextMenuItems.add(new MenuItem(historyItem));
@@ -270,16 +313,188 @@ public class MainLayout extends Application {
         });
         urlContextMenu.getStyleClass().add("urlContextMenu");
     }
+
+    private MenuItem myMenuItem(String title,EventHandler<ActionEvent> e){
+        MenuItem item = new MenuItem(title);
+        item.setOnAction(e);
+        return item;
+    }
+
+    private MenuItem myMenuItem(String title){
+        return new MenuItem(title);
+    }
+
+    private void setStartPage(String url){
+        System.out.println("Start Page="+url);
+        windowState.setStartPage(url);
+    }
+
+    private Label StyledLabel(String text,String style){
+        Label label = new Label(text);
+        label.setStyle(style);
+        return label;
+    }
+
+    private void openSettings(){
+        String startPage = this.windowState.getStartPage();
+        String defaultStartPage = "newtab.html";
+        VBox settingsRoot = new VBox();
+        settingsRoot.getChildren().add(new Label("Startseite"));
+        HBox startPageBox = new HBox();
+        TextField url = new TextField(startPage);
+        CheckBox def = new CheckBox();
+        if(startPage.equals(defaultStartPage)){
+            url.setDisable(true);
+        }
+        def.setSelected(startPage.equals(defaultStartPage));
+        def.setOnAction(e->{
+            if(def.isSelected()){
+                setStartPage(defaultStartPage);
+                url.setText(defaultStartPage);
+                url.setDisable(true);
+            }else{
+                url.setDisable(false);
+                setStartPage(url.getText());
+            }
+        });
+
+        url.addEventHandler(KeyEvent.KEY_RELEASED,e->{
+            def.setSelected(false);
+            setStartPage(url.getText());
+        });
+
+        startPageBox.getChildren().addAll(url, def);
+        settingsRoot.getChildren().add(startPageBox);
+        Button btn = new Button("Speichern");
+        Stage stage = new Stage();
+        btn.setOnAction(e->{
+            stage.hide();
+        });
+        settingsRoot.getChildren().add(btn);
+        settingsRoot.setPadding(new Insets(10,15,10,15));
+
+        Scene scene = new Scene(settingsRoot);
+        stage.setScene(scene);
+        stage.setTitle("ReDiNet :: Einstellungen");
+        stage.show();
+    }
+    private void openAbout(){
+        setBarStatus(0);
+        Tab tab = new Tab();
+        tab.setText("ReDiNet :: About");
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setStyle("-fx-background:#111;");
+        VBox vBox = new VBox();
+        ArrayList<Node> list = new ArrayList<>();
+        list.add(StyledLabel("About ReDiNet","-fx-font-size: 20;-fx-font-weight: bold"));
+        list.add(StyledLabel("ReDiNet is a small Web Browser driven by the default WebView engine of java.",""));
+        list.add(StyledLabel("This Web Browser is mainly for showcasing purpose due to the necessity of the OOP2 Course at Hof-University.",""));
+        list.add(StyledLabel("It states: Testataufgabe zur Vorlesung Objektorientierte Programmierung 2",""));
+        list.add(StyledLabel("Used icons are provided by fontawesome. (See dotmenu -> help -> fontawesome)\n\n",""));
+        list.add(StyledLabel("This Software is provided by Max 'ReDiGermany' Kruggel - Computer Science Student at Hof University - 2nd semester - 00381220",""));
+        vBox.getChildren().addAll(list);
+        scrollPane.setContent(vBox);
+        vBox.setOpaqueInsets(new Insets(30));
+        tab.setContent(scrollPane);
+        tabPane.getTabs().add(tabPane.getTabs().size()-1,tab);
+        SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
+        selectionModel.select(tab);
+    }
+    private void openHistory(){
+        setBarStatus(0);
+        Tab tab = new Tab();
+        tab.setText("ReDiNet :: Browsing History");
+
+
+        VBox root = new VBox();
+        for(String item:HistoryController.getInstance().getList()){
+            Button btn = new Button(item);
+            btn.setPrefWidth(primaryStage.getWidth() - 30);
+            btn.setPrefHeight(40);
+            btn.getStyleClass().add("historybutton");
+            btn.setOnAction(e->{
+                newTab(item);
+            });
+            btn.addEventHandler(MouseEvent.ANY,e->{
+                if("MOUSE_ENTERED".equals(e.getEventType().toString())){
+                    btn.getStyleClass().add("hoveredbtn");
+                }
+                else if("MOUSE_EXITED".equals(e.getEventType().toString())){
+                    btn.getStyleClass().remove("hoveredbtn");
+                }
+            });
+            root.getChildren().add(btn);
+        }
+
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setStyle("-fx-background:#111;");
+        scrollPane.setContent(root);
+        VBox vBox = new VBox();
+        vBox.setStyle("-fx-background:#111;");
+        Button clearButton = new Button("Clear History");
+        clearButton.setOnAction(e->{
+            HistoryController.getInstance().clear();
+            tabPane.getTabs().remove(tab);
+            openHistory();
+        });
+        vBox.getChildren().addAll(scrollPane,clearButton);
+        tab.setContent(vBox);
+        tabPane.getTabs().add(tabPane.getTabs().size()-1,tab);
+        SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
+        selectionModel.select(tab);
+    }
+
     private void initBookmarkButton(){
         updateBookmarkList();
         bookmarkBtn.setOnAction(e->{
             bc.toggleBookmark(new TabInfo(tabPane.getSelectionModel().getSelectedItem()));
         });
     }
-    private void initMenuButton(){}
+    private void initMenuButton(){
+//        initHomeBtn();
+        ContextMenu menuContextMenu = new ContextMenu();
+        ArrayList<MenuItem> items = new ArrayList<>();
+
+        Menu datei = new Menu("Datei");
+        datei.getStyleClass().add("menuSubMenu");
+        datei.getItems().add(myMenuItem("Neues Tab",e->{newTab();}));
+        datei.getItems().add(myMenuItem("Neues Fenster",e->{newWindow("newtab.html");}));
+        items.add(datei);
+
+        Menu extras = new Menu("Extras");
+        extras.getStyleClass().add("menuSubMenu");
+        extras.getItems().add(myMenuItem("Einstellungen",e->{openSettings();}));
+        extras.getItems().add(myMenuItem("History",e->{openHistory();}));
+        items.add(extras);
+
+        Menu help = new Menu("Hilfe");
+        help.getStyleClass().add("menuSubMenu");
+        help.getItems().add(myMenuItem("Über",e->{openAbout();}));
+        help.getItems().add(myMenuItem("Github",e->{newTab("https://github.com/ReDiGermany/HOF-OOP2-ReDiNet");}));
+        help.getItems().add(myMenuItem("Fontawesome",e->{newTab("http://fontawesome.com/icons/");}));
+        items.add(help);
+
+        items.add(myMenuItem("Minimieren",e->{primaryStage.setIconified(true);}));
+        items.add(myMenuItem("Maximieren",e->{primaryStage.setMaximized(true);}));
+        items.add(myMenuItem("Schließen",e->{primaryStage.hide();}));
+
+        menuContextMenu.getItems().addAll(items);
+//        menuContextMenu.add(new MenuItem(historyItem));
+        menuBtn.setOnAction(e->{
+            menuContextMenu.show(primaryStage,menuBtn.getLayoutX()+primaryStage.getX()-60,menuBtn.getLayoutY()+primaryStage.getY()+60);
+        });
+        menuBtn.setContextMenu(menuContextMenu);
+        menuContextMenu.getStyleClass().add("menuContextMenu");
+    }
 
     private WebTab getCurrentTab(){
-        return (WebTab) tabPane.getSelectionModel().getSelectedItem();
+        try {
+            WebTab tab = (WebTab) tabPane.getSelectionModel().getSelectedItem();
+            return tab;
+        }catch(Exception e){
+            return new WebTab();
+        }
     }
 
     public void updateBookmarkList() {
@@ -358,7 +573,11 @@ public class MainLayout extends Application {
                 "Ladevorgang gestartet.",
                 "Lädt "+url,
                 "Webseite "+url+" fertig geladen.",
+                "Webseite "+url+" fehler?",
+                "Webseite "+url+" wurde nicht gefunden.",
+//                "Webseite "+url+" fertig geladen.",
         }[statusId]);
+        updateLayoutWidth();
     }
 
     private void updateLayoutHeight() {
@@ -370,9 +589,11 @@ public class MainLayout extends Application {
     }
 
     private void updateLayoutWidth() {
-        urlBarWidth = primaryStage.getWidth()-(6*menuBtn.getWidth())-20;
-        urlBar.setMinWidth(urlBarWidth);
-        urlBar.setMaxWidth(urlBarWidth);
+        urlBarWidth = primaryStage.getWidth()-(6*menuBtn.getWidth())-20
+                -(urlBarChanged?25:0)
+        -25
+        ;
+//        System.out.println("urlBarChanged="+urlBarChanged+"; urlBarWidth="+urlBarWidth);
         tabPane.setMinWidth(primaryStage.getWidth()-15);
         tabPane.setMaxWidth(primaryStage.getWidth()-15);
 //        Popup p = new Popup();
@@ -394,7 +615,16 @@ public class MainLayout extends Application {
         urlContextMenu.setMaxWidth(50);
         urlContextMenu.setWidth(50);
         urlContextMenu.setPrefWidth(50);
+
+        goBtn.setVisible(urlBarChanged);
+        goBtn.setMaxWidth(urlBarChanged?25:0);
+        goBtn.setMinWidth(urlBarChanged?25:0);
+        goBtn.setPrefWidth(urlBarChanged?25:0);
+
+        urlBar.setMinWidth(urlBarWidth);
+        urlBar.setMaxWidth(urlBarWidth);
     }
+
     public void setTab(String url) {
         setBarStatus(0);
         getCurrentTab().setUrl(url);
