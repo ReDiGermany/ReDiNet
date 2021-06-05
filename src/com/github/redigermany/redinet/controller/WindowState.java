@@ -11,6 +11,7 @@ public class WindowState {
     private double height = 720;
     private double posX = 0;
     private double posY = 0;
+    private String startPage = "newtab.html";
     private final String fileName = "window.conf";
     private boolean maximized = false;
 
@@ -30,6 +31,7 @@ public class WindowState {
                                 "y=" + posY,
                                 "w=" + width,
                                 "h=" + height,
+                                "startpage=" + startPage,
                                 "ms=" + (maximized?1:0),
                         });
                         logger.info("Writing window config to:\n"+newConf);
@@ -65,6 +67,10 @@ public class WindowState {
         if(ln[0].equals("ms")){
             maximized = Integer.parseInt(ln[1])==1;
             logger.info("maximized="+maximized);
+        }
+        if(ln[0].equals("startpage")){
+            startPage = ln[1];
+            logger.info("startPage="+startPage);
         }
     }
 
@@ -120,6 +126,16 @@ public class WindowState {
     }
     public void setMaximized(Boolean newVal) {
         this.maximized = newVal;
+        startThread();
+    }
+
+    public String getStartPage() {
+        return startPage;
+    }
+
+    public void setStartPage(String startPage) {
+        if(!startPage.startsWith("http") && !startPage.equals("newtab.html")) startPage = "http://"+startPage;
+        this.startPage = startPage;
         startThread();
     }
 }

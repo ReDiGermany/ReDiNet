@@ -3,6 +3,7 @@ package com.github.redigermany.redinet.view;
 import com.github.redigermany.redinet.controller.HistoryController;
 import com.github.redigermany.redinet.controller.Logger;
 import com.github.redigermany.redinet.controller.MainLayout;
+import com.github.redigermany.redinet.controller.WindowState;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
@@ -32,14 +33,18 @@ public class WebTab extends Tab {
     private final List<Observer> observers = new ArrayList<Observer>();
     private String title="new Tab";
     private String image;
-    private String url = "newtab.html";
+    private String url = "notfound.html";
     private boolean local = false;
     private final WebView webView = new WebView();
     private final WebEngine webEngine = webView.getEngine();
     private Stage primaryStage;
 
     public WebTab(){
+        initWebTab();
+    }
+    private void initWebTab(){
         logger.info("Init tab");
+
         getStyleClass().add("tabBtn");
         setContent(webView);
         loadCurrentUrl();
@@ -53,6 +58,9 @@ public class WebTab extends Tab {
             @Override
             public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue, Worker.State newValue) {
                 System.out.println("New state! "+newValue+" ("+observable.getValue().name()+" | "+observable.getValue().ordinal()+")");
+                if(observable.getValue().ordinal()==5){
+                    setUrl("notfound.html");
+                }
                 notifyAllObserversStatus(observable.getValue().ordinal());
                 updatePageInformation();
             }
@@ -76,9 +84,10 @@ public class WebTab extends Tab {
             logger.setId(nw);
         });
     }
-    public WebTab(Stage primaryStage){
-        this();
+    public WebTab(WindowState ws,Stage primaryStage){
+        this.url = ws.getStartPage();
         this.primaryStage = primaryStage;
+        initWebTab();
     }
 
     private void loadCurrentUrl(){
