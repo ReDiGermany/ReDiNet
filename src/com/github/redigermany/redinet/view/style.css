@@ -152,3 +152,29 @@
     -fx-background-color: rgba(255,255,255,.1);
     -fx-text-fill: white;
 }
+
+.menuContextMenu,
+.menuContextMenu * {
+    -fx-background-color: #3c3f41;
+    -fx-text-fill: white;
+}
+.menuContextMenu .menu-item .label {
+    -fx-text-fill: rgba(255,255,255,.5);
+}
+.menuContextMenu .menu-item:focused .label {
+    -fx-text-fill: rgba(255,255,255,1);
+    -fx-background-color: #202020;
+}
+.menuContextMenu .menu-item:focused {
+    -fx-background-color: #202020;
+}
+
+.historybutton {
+    -fx-background-color: #111;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-text-align: left;
+}
+.historybutton.hoveredbtn {
+    -fx-background-color: #202020;
+}
