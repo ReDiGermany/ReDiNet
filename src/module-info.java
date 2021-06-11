@@ -1,5 +1,4 @@
 module ReDiNet {
-    exports com.github.redigermany.redinet;
     exports com.github.redigermany.redinet.view;
     exports com.github.redigermany.redinet.controller;
     requires javafx.base;
@@ -8,4 +7,6 @@ module ReDiNet {
     requires javafx.controls;
     requires javafx.web;
     opens com.github.redigermany.redinet.controller;
+    exports com.github.redigermany.redinet.model;
+    opens com.github.redigermany.redinet.model;
 }

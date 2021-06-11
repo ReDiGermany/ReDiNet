@@ -1,9 +1,8 @@
 package com.github.redigermany.redinet.view;
 
-import com.github.redigermany.redinet.controller.HistoryController;
+import com.github.redigermany.redinet.model.HistoryModel;
 import com.github.redigermany.redinet.controller.Logger;
-import com.github.redigermany.redinet.controller.MainLayout;
-import com.github.redigermany.redinet.controller.WindowState;
+import com.github.redigermany.redinet.model.WindowState;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker;
@@ -19,14 +18,12 @@ import javafx.stage.Stage;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.events.MouseEvent;
 
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 public class WebTab extends Tab {
     private final Logger logger = new Logger(Logger.TYPES.ERROR);
@@ -50,7 +47,7 @@ public class WebTab extends Tab {
         loadCurrentUrl();
         webEngine.locationProperty().addListener((obs,ol,nw)->{
             url = nw;
-            HistoryController.getInstance().addUrl(nw);
+            HistoryModel.getInstance().addUrl(nw);
             logger.info("new url "+nw);
             updatePageInformation();
         });

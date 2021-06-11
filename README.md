@@ -5,6 +5,9 @@ Todo:
 - [ ] Model implementieren
 - [ ] Views (z.B. Settings oder History view)
 
+Ideen:
+- [ ] Private session. (Keine History?)
+
 ## Officials
 
 ### Testat Checkliste
