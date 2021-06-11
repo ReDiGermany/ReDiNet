@@ -1,11 +1,14 @@
 package com.github.redigermany.redinet.controller;
 
+import com.github.redigermany.redinet.model.BookmarkModel;
+import com.github.redigermany.redinet.model.HistoryModel;
+import com.github.redigermany.redinet.model.TabInfo;
+import com.github.redigermany.redinet.model.WindowState;
 import com.github.redigermany.redinet.view.NavigationButton;
 import com.github.redigermany.redinet.view.Observer;
+import com.github.redigermany.redinet.view.UrlBar;
 import com.github.redigermany.redinet.view.WebTab;
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -21,7 +24,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.web.WebHistory;
 import javafx.stage.*;
 
@@ -29,7 +31,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.Stack;
 
 public class MainLayout extends Application {
 
@@ -37,7 +38,7 @@ public class MainLayout extends Application {
     @FXML private NavigationButton forwBtn;
     @FXML private NavigationButton reloadBtn;
     @FXML private NavigationButton goBtn;
-    @FXML private TextField urlBar;
+    @FXML private UrlBar urlBar;
     @FXML private NavigationButton bookmarkBtn;
     @FXML private NavigationButton menuBtn;
     @FXML private NavigationButton homeBtn;
@@ -49,7 +50,7 @@ public class MainLayout extends Application {
     @FXML private Label progressLabel;
 
     private Stage primaryStage;
-    private BookmarkController bc = new BookmarkController(this);
+    private BookmarkModel bc = new BookmarkModel(this);
     private ContextMenu urlContextMenu = new ContextMenu();
     private int urlContextMenuSelected = 0;
     private WindowState windowState = new WindowState();
@@ -58,7 +59,7 @@ public class MainLayout extends Application {
     private double urlBarWidth;
     private boolean urlBarChanged = false;
 
-    public BookmarkController getBookmarkController() {
+    public BookmarkModel getBookmarkController() {
         return bc;
     }
     private final EventHandler<? super ContextMenuEvent> getHistoryContextMenu = e ->{
@@ -168,7 +169,6 @@ public class MainLayout extends Application {
         initReloadButton();
         initGoBtn();
         initHomeBtn();
-        initUrlBar();
         initBookmarkButton();
         initMenuButton();
         tabPane.getSelectionModel().selectedItemProperty().addListener((ov, t, t1) -> {
@@ -180,9 +180,8 @@ public class MainLayout extends Application {
             }
         });
         initUpdateTabInfo(getCurrentTab());
-        newTab.setOnSelectionChanged(e->{
-            newTab();
-        });
+        newTab.setOnSelectionChanged(e->newTab());
+        urlBar.getCurrentTab = getCurrentTab();
     }
 
     private void initPrevButton(){
@@ -208,110 +207,12 @@ public class MainLayout extends Application {
         });
     }
     private void initGoBtn(){
-        goBtn.setOnAction(e->{
-            urlBarChanged = false;
-            String url="";
-            if(urlContextMenuSelected==0){
-                url = "https://www.google.com/search?q="+urlBar.getText();
-            }else{
-                url = urlContextMenu.getItems().get(urlContextMenuSelected).getText();
-            }
-            getCurrentTab().setUrl(url);
-            urlContextMenu.hide();
-        });
+        goBtn.setOnAction(e->urlBar.navigate());
     }
     private void initHomeBtn(){
         homeBtn.setOnAction(e->{
             getCurrentTab().setUrl(windowState.getStartPage());
         });
-    }
-
-    private void showUrlBarAutocomplete(){
-        urlContextMenu.show(primaryStage,primaryStage.getX()+urlBar.getLayoutX()+35,primaryStage.getY()+urlBar.getLayoutY()+60);
-        updateLayoutWidth();
-    }
-
-    private void initUrlBar(){
-        urlBar.setContextMenu(urlContextMenu);
-        urlBar.addEventFilter(MouseEvent.MOUSE_CLICKED, e->{
-            urlBar.selectAll();
-            showUrlBarAutocomplete();
-        });
-        urlBar.addEventFilter(KeyEvent.KEY_RELEASED,e->{
-            boolean isUrl = urlBar.getText().matches("[a-zA-Z0-9-_\\.]+\\.[a-zA-Z]+");
-
-            if(e.getCode() == KeyCode.ENTER){
-                urlBarChanged = false;
-                String url="";
-                if(urlContextMenuSelected==0 && isUrl) {
-                    url = urlBar.getText();
-                    if(!url.matches("(http|https)://")){
-                        url = "http://"+url;
-                    }
-
-                }else if(urlContextMenuSelected==0 && !isUrl || urlContextMenuSelected==1 && isUrl) {
-                    url = "https://www.google.com/search?q="+urlBar.getText();
-                }else{
-                    url = urlContextMenu.getItems().get(urlContextMenuSelected).getText();
-                }
-                getCurrentTab().setUrl(url);
-                urlContextMenu.hide();
-            }else{
-                urlBarChanged = true;
-                if(e.getCode()==KeyCode.DOWN){
-                    urlContextMenuSelected++;
-                    if(urlContextMenuSelected==urlContextMenu.getItems().size()){
-                        urlContextMenuSelected = 0;
-                    }
-                    Set<Node> items = urlContextMenu.getSkin().getNode().lookupAll(".menu-item");
-                    Iterator<Node> it = items.iterator();
-                    Node item;
-                    int n=0;
-                    while(it.hasNext()){
-                        item = it.next();
-                        if(n==urlContextMenuSelected){
-                            item.requestFocus();
-                            break;
-                        }
-                        n++;
-                    }
-                }
-                else if(e.getCode()==KeyCode.UP){
-                    urlContextMenuSelected--;
-                    if(urlContextMenuSelected<0){
-                        urlContextMenuSelected = urlContextMenu.getItems().size()-1;
-                    }
-                    Set<Node> items = urlContextMenu.getSkin().getNode().lookupAll(".menu-item");
-                    Iterator<Node> it = items.iterator();
-                    Node item;
-                    int n=0;
-                    while(it.hasNext()){
-                        item = it.next();
-                        if(n==urlContextMenuSelected){
-                            item.requestFocus();
-                            break;
-                        }
-                        n++;
-                    }
-                }
-                else {
-                    ArrayList<String> historyLog = HistoryController.getInstance().search(urlBar.getText());
-                    ArrayList<MenuItem> urlContextMenuItems = new ArrayList<>();
-
-//                    System.out.println(urlBar.getText()+" should be "+(isUrl?"website":"google search")+"; isUrl="+isUrl);
-                    if(isUrl){
-                        urlContextMenuItems.add(new MenuItem("Go to: "+urlBar.getText()));
-                    }
-                    urlContextMenuItems.add(new MenuItem("Google search: "+urlBar.getText()));
-                    for(String historyItem:historyLog){
-                        urlContextMenuItems.add(new MenuItem(historyItem));
-                    }
-                    urlContextMenu.getItems().setAll(urlContextMenuItems);
-                    showUrlBarAutocomplete();
-                }
-            }
-        });
-        urlContextMenu.getStyleClass().add("urlContextMenu");
     }
 
     private MenuItem myMenuItem(String title,EventHandler<ActionEvent> e){
@@ -408,7 +309,7 @@ public class MainLayout extends Application {
 
 
         VBox root = new VBox();
-        for(String item:HistoryController.getInstance().getList()){
+        for(String item: HistoryModel.getInstance().getList()){
             Button btn = new Button(item);
             btn.setPrefWidth(primaryStage.getWidth() - 30);
             btn.setPrefHeight(40);
@@ -434,7 +335,7 @@ public class MainLayout extends Application {
         vBox.setStyle("-fx-background:#111;");
         Button clearButton = new Button("Clear History");
         clearButton.setOnAction(e->{
-            HistoryController.getInstance().clear();
+            HistoryModel.getInstance().clear();
             tabPane.getTabs().remove(tab);
             openHistory();
         });
@@ -502,6 +403,8 @@ public class MainLayout extends Application {
     }
 
     private void initUpdateTabInfo(WebTab tab){
+        System.out.println("tab change?");
+        urlBar.setSecure(tab.getUrl().startsWith("https"));
         tab.attach(new Observer() {
             @Override
             public void update(WebTab tab) {
@@ -527,19 +430,16 @@ public class MainLayout extends Application {
     }
     private void doUpdateTabInfo(WebTab tab){
         TabInfo info = new TabInfo(tab);
-        if(info.getUrl().startsWith("https")){
-            urlBar.getStyleClass().setAll("urlBar","secure");
-        }else{
-            urlBar.getStyleClass().setAll("urlBar");
-        }
+        urlBar.setSecure(info.getUrl().startsWith("https"));
         if(bc.isBookmark(info.getUrl())){
             bookmarkBtn.setImageUrl("star-full-solid.png");
         }else{
             bookmarkBtn.setImageUrl("star-empty-solid.png");
         }
-        if (!info.getIcon().equals("")) primaryStage.getIcons().add(new Image(info.getIcon()));
         primaryStage.setTitle(info.getTitle());
-        urlBar.setText(info.getUrl());
+        urlBar.setUrl(info.getUrl());
+        if(info.getUrl().startsWith("redinet:")) return;
+        if (!info.getIcon().equals("")) primaryStage.getIcons().add(new Image(info.getIcon()));
         WebHistory history = tab.getHistory();
         int entryLength = history.getEntries().size()-1;
         int currentEntry = history.getCurrentIndex();
@@ -593,24 +493,12 @@ public class MainLayout extends Application {
                 -(urlBarChanged?25:0)
         -25
         ;
-//        System.out.println("urlBarChanged="+urlBarChanged+"; urlBarWidth="+urlBarWidth);
+
+        System.out.println("URLBAR WIDTH WILL BE "+urlBarWidth);
+
         tabPane.setMinWidth(primaryStage.getWidth()-15);
         tabPane.setMaxWidth(primaryStage.getWidth()-15);
-//        Popup p = new Popup();
-//        ArrayList<Label> test = new ArrayList<>();
-//        for(int i=0;i<6;i++){
-//            Label label = new Label("Test "+i);
-//            label.getStyleClass().add("urlpopupitem");
-//            label.setMaxWidth(urlBarWidth);
-//            label.setMinWidth(urlBarWidth);
-//            label.setPrefWidth(urlBarWidth);
-//            label.setTranslateY(i*25);
-//            test.add(label);
-//        }
-//        p.getContent().setAll(test);
-//        p.show(primaryStage);
-//        p.setAnchorX(primaryStage.getX() + urlBar.getLayoutX() + 25);
-//        p.setAnchorY(primaryStage.getY() + urlBar.getLayoutY() + 50);
+
         urlContextMenu.setMinWidth(50);
         urlContextMenu.setMaxWidth(50);
         urlContextMenu.setWidth(50);
@@ -621,8 +509,7 @@ public class MainLayout extends Application {
         goBtn.setMinWidth(urlBarChanged?25:0);
         goBtn.setPrefWidth(urlBarChanged?25:0);
 
-        urlBar.setMinWidth(urlBarWidth);
-        urlBar.setMaxWidth(urlBarWidth);
+        urlBar.setWidthM(urlBarWidth);
     }
 
     public void setTab(String url) {

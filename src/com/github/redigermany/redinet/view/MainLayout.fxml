@@ -13,6 +13,7 @@
 <?import com.github.redigermany.redinet.view.NavigationButton?>
 <?import javafx.scene.web.WebView?>
 <?import com.github.redigermany.redinet.view.WebTab?>
+<?import com.github.redigermany.redinet.view.UrlBar?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             prefHeight="720.0" prefWidth="1280.0" stylesheets="@style.css"
@@ -22,7 +23,7 @@
         <NavigationButton fx:id="prevBtn" imageUrl="arrow-left-solid.png" />
         <NavigationButton fx:id="forwBtn" imageUrl="arrow-right-solid.png" />
         <NavigationButton fx:id="reloadBtn" imageUrl="arrow-reload-solid.png" />
-        <TextField viewOrder="-Infinity" fx:id="urlBar" styleClass="urlBar">URL</TextField>
+        <UrlBar fx:id="urlBar" />
         <NavigationButton fx:id="goBtn" imageUrl="directions-solid.png" />
         <NavigationButton fx:id="homeBtn" imageUrl="home-solid.png" />
         <NavigationButton fx:id="bookmarkBtn" imageUrl="star-empty-solid.png" />
