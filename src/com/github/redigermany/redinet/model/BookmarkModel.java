@@ -2,7 +2,6 @@ package com.github.redigermany.redinet.model;
 
 import com.github.redigermany.redinet.controller.Logger;
 import com.github.redigermany.redinet.controller.MainLayout;
-import com.github.redigermany.redinet.controller.TabInfo;
 import com.github.redigermany.redinet.view.Bookmark;
 
 import java.io.*;
