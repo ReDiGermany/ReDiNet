@@ -84,10 +84,6 @@ public class HistoryModel {
         return ret;
     }
 
-    private HistoryModel(){
-        readConfig();
-    }
-
     /**
      * Reads the current `history.log`
      */
@@ -100,6 +96,10 @@ public class HistoryModel {
         }catch(IOException e) {
             logger.error(e.getMessage());
         }
+    }
+
+    private HistoryModel(){
+        readConfig();
     }
 
 }
