@@ -2,7 +2,6 @@ package com.github.redigermany.redinet.model;
 
 import com.github.redigermany.redinet.controller.Logger;
 import com.github.redigermany.redinet.controller.MainLayout;
-import com.github.redigermany.redinet.view.Bookmark;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -13,13 +12,13 @@ import java.util.ArrayList;
  * Bookmarks are saved into `bookmarks.list` as a csv styles file but with ":-:" as default splitter
  * @author Max Kruggel
  */
-public class BookmarkModel {
+public class BookmarkList {
     private final Logger logger = new Logger(Logger.TYPES.ERROR);
     private final ArrayList<Bookmark> bookmarkList = new ArrayList<>();
     private final MainLayout mainLayout;
     private final String fileName = "/bookmarks.list";
 
-    public BookmarkModel(MainLayout mainLayout){
+    public BookmarkList(MainLayout mainLayout){
         this.mainLayout = mainLayout;
         readBookmarks();
     }
