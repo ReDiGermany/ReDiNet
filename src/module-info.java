@@ -9,4 +9,5 @@ module ReDiNet {
     opens com.github.redigermany.redinet.controller;
     exports com.github.redigermany.redinet.model;
     opens com.github.redigermany.redinet.model;
+    exports com.github.redigermany.redinet;
 }
