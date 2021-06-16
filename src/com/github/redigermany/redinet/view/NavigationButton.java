@@ -1,10 +1,12 @@
 package com.github.redigermany.redinet.view;
 
 import javafx.scene.control.Button;
-
-import java.io.File;
 import java.net.URL;
 
+/**
+ * Image based navigation button
+ * @author Max Kruggel
+ */
 public class NavigationButton extends Button {
     private String imageUrl;
 
@@ -12,6 +14,10 @@ public class NavigationButton extends Button {
         getStyleClass().add("navigationButton");
     }
 
+    /**
+     * Sets the image url
+     * @param imageUrl the new url
+     */
     public void setImageUrl(String imageUrl) {
         URL url = getClass().getResource("/UI/" + imageUrl);
         if(url!=null){
@@ -20,6 +26,10 @@ public class NavigationButton extends Button {
         }
     }
 
+    /**
+     * Gets the current image url
+     * @return image url
+     */
     public String getImageUrl() {
         return imageUrl;
     }
