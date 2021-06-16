@@ -1,13 +1,11 @@
 package com.github.redigermany.redinet.controller;
 
-import com.github.redigermany.redinet.model.BookmarkModel;
+import com.github.redigermany.redinet.model.BookmarkList;
 import com.github.redigermany.redinet.model.HistoryModel;
 import com.github.redigermany.redinet.model.TabInfo;
 import com.github.redigermany.redinet.model.WindowState;
 import com.github.redigermany.redinet.view.NavigationButton;
-import com.github.redigermany.redinet.view.Observer;
-import com.github.redigermany.redinet.view.UrlBar;
-import com.github.redigermany.redinet.view.WebTab;
+import com.github.redigermany.redinet.model.WebTab;
 import javafx.application.Application;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -15,12 +13,10 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
@@ -29,8 +25,6 @@ import javafx.stage.*;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Set;
 
 public class MainLayout extends Application {
 
@@ -50,18 +44,19 @@ public class MainLayout extends Application {
     @FXML private Label progressLabel;
 
     private Stage primaryStage;
-    private BookmarkModel bc = new BookmarkModel(this);
-    private ContextMenu urlContextMenu = new ContextMenu();
-    private int urlContextMenuSelected = 0;
-    private WindowState windowState = new WindowState();
+    private final BookmarkList bc = new BookmarkList(this);
+    private final ContextMenu urlContextMenu = new ContextMenu();
+    private final WindowState windowState = new WindowState();
     private final Logger logger = new Logger(Logger.TYPES.NONE);
     private String initUrl;
-    private double urlBarWidth;
-    private boolean urlBarChanged = false;
 
-    public BookmarkModel getBookmarkController() {
+    public BookmarkList getBookmarkController() {
         return bc;
     }
+
+    /**
+     * History ContextMenu
+     */
     private final EventHandler<? super ContextMenuEvent> getHistoryContextMenu = e ->{
 
         ObservableList<WebHistory.Entry> history = getCurrentTab().getHistory().getEntries();
@@ -84,10 +79,13 @@ public class MainLayout extends Application {
                     return;
                 }
             }
-//            System.err.println("History item not found?");
         });
     };
 
+    /**
+     * Initializes a new Tab with the given url.
+     * @param url the url.
+     */
     public void newTab(String url){
         setBarStatus(0);
         WebTab tab = new WebTab(windowState,primaryStage);
@@ -96,26 +94,38 @@ public class MainLayout extends Application {
         SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
         selectionModel.select(tab);
     }
+
+    /**
+     * Relay for anonymous new tab.
+     */
     public void newTab(){
         newTab(null);
     }
 
+    /**
+     * Sets the initial url
+     * @param url the url
+     */
     public void initUrl(String url){
         this.initUrl = url;
     }
 
+    /**
+     * Setting window properties.
+     */
     private void setWindowProperties(){
         primaryStage.setMaximized(windowState.getMaximized());
         primaryStage.setX(windowState.getX());
         primaryStage.setY(windowState.getY());
     }
+
+    /**
+     * Adding window Listeners.
+     */
     private void addWindowListeners(){
-        primaryStage.xProperty().addListener((obs, oldVal, newVal) -> {
-            windowState.setX((double) newVal);
-        });
-        primaryStage.yProperty().addListener((obs, oldVal, newVal) -> {
-            windowState.setY((double) newVal);
-        });
+        primaryStage.xProperty().addListener((obs, oldVal, newVal) -> windowState.setX((double) newVal));
+        primaryStage.yProperty().addListener((obs, oldVal, newVal) -> windowState.setY((double) newVal));
+        primaryStage.maximizedProperty().addListener((obs,oldVal,newVal)->windowState.setMaximized(newVal));
         primaryStage.widthProperty().addListener((obs,oldVal,newVal)->{
             windowState.setWidth((double) newVal);
             updateLayoutWidth();
@@ -123,9 +133,6 @@ public class MainLayout extends Application {
         primaryStage.heightProperty().addListener((obs,oldVal,newVal)->{
             windowState.setHeight((double) newVal);
             updateLayoutHeight();
-        });
-        primaryStage.maximizedProperty().addListener((obs,oldVal,newVal)->{
-            windowState.setMaximized(newVal);
         });
     }
 
@@ -138,7 +145,7 @@ public class MainLayout extends Application {
         primaryStage = stage;
         URL xml = getClass().getResource("/com/github/redigermany/redinet/view/MainLayout.fxml");
         if(xml==null){
-            System.out.println("File \"MainLayout.fxml\" not found!");
+            logger.error("File \"MainLayout.fxml\" not found!");
             return;
         }
         FXMLLoader loader = new FXMLLoader(xml);
@@ -163,6 +170,9 @@ public class MainLayout extends Application {
         openAbout();
     }
 
+    /**
+     * Initializes the whole base layout
+     */
     private void initBaseLayout() {
         initPrevButton();
         initForwButton();
@@ -175,15 +185,18 @@ public class MainLayout extends Application {
             try {
                 initUpdateTabInfo((WebTab) t1);
             }catch (Exception e){
-                if(!e.getMessage().startsWith("class javafx.scene.control.Tab cannot be cast to class com.github.redigermany.redinet.view.WebTab"))
+                if(!e.getMessage().startsWith("class javafx.scene.control.Tab cannot be cast to class com.github.redigermany.redinet.model.WebTab"))
                     e.printStackTrace();
             }
         });
         initUpdateTabInfo(getCurrentTab());
         newTab.setOnSelectionChanged(e->newTab());
-        urlBar.getCurrentTab = getCurrentTab();
+        urlBar.currentTab = getCurrentTab();
     }
 
+    /**
+     * Initializes the back button
+     */
     private void initPrevButton(){
         prevBtn.setDisable(true);
         prevBtn.setOnContextMenuRequested(getHistoryContextMenu);
@@ -193,6 +206,10 @@ public class MainLayout extends Application {
                 history.go(-1);
         });
     }
+
+    /**
+     * Initializes the forward button (when u went back)
+     */
     private void initForwButton(){
         forwBtn.setDisable(true);
         forwBtn.setOnAction(e->{
@@ -201,41 +218,56 @@ public class MainLayout extends Application {
         });
         forwBtn.setOnContextMenuRequested(getHistoryContextMenu);
     }
+
+    /**
+     * Initializes the reload button
+     */
     private void initReloadButton(){
         reloadBtn.setOnAction(e->{
             getCurrentTab().reload();
         });
     }
+
+    /**
+     * Initializes the go button
+     */
     private void initGoBtn(){
         goBtn.setOnAction(e->urlBar.navigate());
     }
+
+    /**
+     * Initializes the home button
+     */
     private void initHomeBtn(){
         homeBtn.setOnAction(e->{
             getCurrentTab().setUrl(windowState.getStartPage());
         });
     }
 
+    /**
+     * MenuItem wrapper for simple press actions.
+     * @param title the title of the menu item
+     * @param e the actionevent listener
+     * @return the item
+     */
     private MenuItem myMenuItem(String title,EventHandler<ActionEvent> e){
         MenuItem item = new MenuItem(title);
         item.setOnAction(e);
         return item;
     }
 
-    private MenuItem myMenuItem(String title){
-        return new MenuItem(title);
-    }
-
+    /**
+     * Sets the start page to the url
+     * @param url new start page url
+     */
     private void setStartPage(String url){
-        System.out.println("Start Page="+url);
+        logger.info("Start Page="+url);
         windowState.setStartPage(url);
     }
 
-    private Label StyledLabel(String text,String style){
-        Label label = new Label(text);
-        label.setStyle(style);
-        return label;
-    }
-
+    /**
+     * Opens the Settings tab.
+     */
     private void openSettings(){
         String startPage = this.windowState.getStartPage();
         String defaultStartPage = "newtab.html";
@@ -279,29 +311,23 @@ public class MainLayout extends Application {
         stage.setTitle("ReDiNet :: Einstellungen");
         stage.show();
     }
+
+    /**
+     * Opens the About tab.
+     */
     private void openAbout(){
         setBarStatus(0);
         Tab tab = new Tab();
         tab.setText("ReDiNet :: About");
-
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setStyle("-fx-background:#111;");
-        VBox vBox = new VBox();
-        ArrayList<Node> list = new ArrayList<>();
-        list.add(StyledLabel("About ReDiNet","-fx-font-size: 20;-fx-font-weight: bold"));
-        list.add(StyledLabel("ReDiNet is a small Web Browser driven by the default WebView engine of java.",""));
-        list.add(StyledLabel("This Web Browser is mainly for showcasing purpose due to the necessity of the OOP2 Course at Hof-University.",""));
-        list.add(StyledLabel("It states: Testataufgabe zur Vorlesung Objektorientierte Programmierung 2",""));
-        list.add(StyledLabel("Used icons are provided by fontawesome. (See dotmenu -> help -> fontawesome)\n\n",""));
-        list.add(StyledLabel("This Software is provided by Max 'ReDiGermany' Kruggel - Computer Science Student at Hof University - 2nd semester - 00381220",""));
-        vBox.getChildren().addAll(list);
-        scrollPane.setContent(vBox);
-        vBox.setOpaqueInsets(new Insets(30));
-        tab.setContent(scrollPane);
+        tab.setContent(new About());
         tabPane.getTabs().add(tabPane.getTabs().size()-1,tab);
         SingleSelectionModel<Tab> selectionModel = tabPane.getSelectionModel();
         selectionModel.select(tab);
     }
+
+    /**
+     * Opens the History tab.
+     */
     private void openHistory(){
         setBarStatus(0);
         Tab tab = new Tab();
@@ -346,12 +372,17 @@ public class MainLayout extends Application {
         selectionModel.select(tab);
     }
 
+    /**
+     * Initializes the bookmark button.
+     */
     private void initBookmarkButton(){
         updateBookmarkList();
-        bookmarkBtn.setOnAction(e->{
-            bc.toggleBookmark(new TabInfo(tabPane.getSelectionModel().getSelectedItem()));
-        });
+        bookmarkBtn.setOnAction(e->bc.toggleBookmark(new TabInfo(tabPane.getSelectionModel().getSelectedItem())));
     }
+
+    /**
+     * Initializes the menu button and its entries.
+     */
     private void initMenuButton(){
 //        initHomeBtn();
         ContextMenu menuContextMenu = new ContextMenu();
@@ -381,14 +412,19 @@ public class MainLayout extends Application {
         items.add(myMenuItem("Schließen",e->{primaryStage.hide();}));
 
         menuContextMenu.getItems().addAll(items);
-//        menuContextMenu.add(new MenuItem(historyItem));
-        menuBtn.setOnAction(e->{
-            menuContextMenu.show(primaryStage,menuBtn.getLayoutX()+primaryStage.getX()-60,menuBtn.getLayoutY()+primaryStage.getY()+60);
-        });
+        menuBtn.setOnAction(e->menuContextMenu.show(
+                primaryStage,
+                menuBtn.getLayoutX()+primaryStage.getX()-60,
+                menuBtn.getLayoutY()+primaryStage.getY()+60)
+        );
         menuBtn.setContextMenu(menuContextMenu);
         menuContextMenu.getStyleClass().add("menuContextMenu");
     }
 
+    /**
+     * Gets the current selected tab
+     * @return the tab
+     */
     private WebTab getCurrentTab(){
         try {
             WebTab tab = (WebTab) tabPane.getSelectionModel().getSelectedItem();
@@ -398,13 +434,20 @@ public class MainLayout extends Application {
         }
     }
 
+    /**
+     * Updates the bookmark list.
+     */
     public void updateBookmarkList() {
         bookmarks.getChildren().setAll(bc.getBookmarks());
     }
 
+    /**
+     * Updates Browser ui for when tab changing.
+     * @param tab
+     */
     private void initUpdateTabInfo(WebTab tab){
-        System.out.println("tab change?");
-        urlBar.setSecure(tab.getUrl().startsWith("https"));
+        logger.debug("tab change?");
+//        urlBar.setSecure(tab.getUrl().startsWith("https"));
         tab.attach(new Observer() {
             @Override
             public void update(WebTab tab) {
@@ -422,15 +465,20 @@ public class MainLayout extends Application {
             }
             @Override
             public void loadingStatus(int status,WebTab tab) {
-                System.out.println("Tab.loadingStatus(Status "+status+" on "+tab.getUrl()+")");
+                logger.debug("Tab.loadingStatus(Status "+status+" on "+tab.getUrl()+")");
                 setBarStatus(status+1);
             }
         });
         doUpdateTabInfo(tab);
     }
+
+    /**
+     * Updates the browser ui with the current tab info.
+     * @param tab the new info
+     */
     private void doUpdateTabInfo(WebTab tab){
         TabInfo info = new TabInfo(tab);
-        urlBar.setSecure(info.getUrl().startsWith("https"));
+//        urlBar.setSecure(info.getUrl().startsWith("https"));
         if(bc.isBookmark(info.getUrl())){
             bookmarkBtn.setImageUrl("star-full-solid.png");
         }else{
@@ -459,6 +507,10 @@ public class MainLayout extends Application {
         }
     }
 
+    /**
+     * Sets the current tab status.
+     * @param statusId
+     */
     public void setBarStatus(int statusId){
         infoBar.setVisible(statusId!=0);
         infoBar.setMaxHeight(25);
@@ -480,6 +532,9 @@ public class MainLayout extends Application {
         updateLayoutWidth();
     }
 
+    /**
+     * Updates the content layout height
+     */
     private void updateLayoutHeight() {
         int offset = bookmarks.getChildren().size()>0?99:74;
         tabPane.setMinHeight(primaryStage.getHeight()-(menuBtn.getHeight()*3)-30);
@@ -488,13 +543,16 @@ public class MainLayout extends Application {
         tabPane.setMaxHeight(primaryStage.getHeight()-offset-(infoBar.isVisible()?infoBar.getHeight():0));
     }
 
+    /**
+     * Updates the content layout width
+     */
     private void updateLayoutWidth() {
-        urlBarWidth = primaryStage.getWidth()-(6*menuBtn.getWidth())-20
-                -(urlBarChanged?25:0)
-        -25
-        ;
+        boolean urlBarChanged = false;
+        double urlBarWidth = primaryStage.getWidth() - (6 * menuBtn.getWidth()) - 20
+                - (urlBarChanged ? 25 : 0)
+                - 25;
 
-        System.out.println("URLBAR WIDTH WILL BE "+urlBarWidth);
+        logger.debug("URLBAR WIDTH WILL BE "+ urlBarWidth);
 
         tabPane.setMinWidth(primaryStage.getWidth()-15);
         tabPane.setMaxWidth(primaryStage.getWidth()-15);
@@ -505,20 +563,28 @@ public class MainLayout extends Application {
         urlContextMenu.setPrefWidth(50);
 
         goBtn.setVisible(urlBarChanged);
-        goBtn.setMaxWidth(urlBarChanged?25:0);
-        goBtn.setMinWidth(urlBarChanged?25:0);
-        goBtn.setPrefWidth(urlBarChanged?25:0);
+        goBtn.setMaxWidth(urlBarChanged ?25:0);
+        goBtn.setMinWidth(urlBarChanged ?25:0);
+        goBtn.setPrefWidth(urlBarChanged ?25:0);
 
         urlBar.setWidthM(urlBarWidth);
     }
 
+    /**
+     * Sets the current tab url
+     * @param url new url
+     */
     public void setTab(String url) {
         setBarStatus(0);
         getCurrentTab().setUrl(url);
     }
 
+    /**
+     * Opens a new window with the given url
+     * @param url the start url
+     */
     public void newWindow(String url) {
-        System.out.println("Open "+url+" in new browser window? ");
+        logger.info("Open "+url+" in new browser window? ");
         try {
             Stage newStage = new Stage();
             final MainLayout mainStage = new MainLayout();
