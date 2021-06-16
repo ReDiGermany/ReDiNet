@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            stylesheets="@style.css"
+            styleClass="root">
+<VBox style="-fx-padding:15 30 15 30">
+    <Label style="-fx-padding: 10 0 0 0;-fx-text-fill: white;-fx-font-size: 25;-fx-font-weight: bold">About ReDiNet</Label>
+    <Label style="-fx-padding: 5 0 0 0;-fx-text-fill: rgba(255,255,255,.5)">ReDiNet is a small Web Browser driven by the default WebView engine of java.</Label>
+    <Label style="-fx-padding: 5 0 0 0;-fx-text-fill: rgba(255,255,255,.5)">This Web Browser is mainly for showcasing purpose due to the necessity of the OOP2 Course at Hof-University.</Label>
+    <Label style="-fx-padding: 5 0 0 0;-fx-text-fill: rgba(255,255,255,.5)">It states: Testataufgabe zur Vorlesung Objektorientierte Programmierung 2</Label>
+    <Label style="-fx-padding: 5 0 0 0;-fx-text-fill: rgba(255,255,255,.5)">Used icons are provided by fontawesome. (See dotmenu -> help -> fontawesome)\n\n</Label>
+    <Label style="-fx-padding: 5 0 0 0;-fx-text-fill: rgba(255,255,255,.5)">This Software is provided by Max 'ReDiGermany' Kruggel - Computer Science Student at Hof University - 2nd semester - 00381220</Label>
+</VBox>
+</AnchorPane>
