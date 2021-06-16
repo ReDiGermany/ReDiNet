@@ -26,6 +26,11 @@ import javafx.stage.*;
 import java.net.URL;
 import java.util.ArrayList;
 
+
+/**
+ * Browser main ui logic.
+ * @author Max Kruggel
+ */
 public class MainLayout extends Application {
 
     @FXML private NavigationButton prevBtn;
