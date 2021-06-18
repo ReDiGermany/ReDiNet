@@ -12,6 +12,7 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebEvent;
@@ -148,27 +149,27 @@ public class WebTab extends Tab {
      * Updates the page info. Getting page url, favicon, title, parsing local urls.
      */
     private void updatePageInformation(){
-        logger.info("[PI] Updating Page information!");
+//        logger.info("[PI] Updating Page information!");
         String location = webEngine.getLocation();
-        logger.info("[PI] location="+location);
+//        logger.info("[PI] location="+location);
         String icon="";
         title = webEngine.getTitle();
-        logger.info("[PI] title="+title);
+//        logger.info("[PI] title="+title);
         if(title!=null) {
             icon = getPageIcon();
             if(!url.startsWith("http")) {
-                logger.info("local file - setting visible url to redinet://newtab");
+//                logger.info("local file - setting visible url to redinet://newtab");
                 setId("redinet://newtab:-:"+icon+":-:"+title);
             }else{
-                logger.info("remote url");
+//                logger.info("remote url");
                 setId(location+":-:"+icon+":-:"+title);
             }
         }else{
-            logger.info("Title not found. Seems like we still loading...");
+//            logger.info("Title not found. Seems like we still loading...");
             title="Loading...";
         }
         if(image==null) setText(title);
-        logger.info(String.format("Moved to %s %s%nTitle: %s%n%n",(local?"local":"public"),location,title));
+//        logger.info(String.format("Moved to %s %s%nTitle: %s%n%n",(local?"local":"public"),location,title));
         notifyAllObservers();
     }
 
@@ -263,7 +264,7 @@ public class WebTab extends Tab {
         return image;
     }
 
-    public WebTab(WindowState ws,Stage primaryStage){
+    public WebTab(WindowState ws, Stage primaryStage){
         this.url = ws.getStartPage();
         this.primaryStage = primaryStage;
         initWebTab();

@@ -170,7 +170,7 @@ public class MainLayout extends Application {
             newTab();
             // TODO: Get last tabs
         }
-
+        urlBar.setTabPane(tabPane);
         initBaseLayout();
 //        openAbout();
     }
@@ -196,7 +196,7 @@ public class MainLayout extends Application {
         });
         initUpdateTabInfo(getCurrentTab());
         newTab.setOnSelectionChanged(e->newTab());
-        urlBar.currentTab = getCurrentTab();
+//        urlBar.currentTab = getCurrentTab();
     }
 
     /**

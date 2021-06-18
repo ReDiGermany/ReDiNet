@@ -4,6 +4,8 @@ import com.github.redigermany.redinet.model.HistoryModel;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import java.util.ArrayList;
@@ -15,7 +17,20 @@ import com.github.redigermany.redinet.model.WebTab;
  */
 public class UrlBar extends ComboBox<String> {
 
-    public WebTab currentTab;
+    public TabPane currentTab;
+
+    private WebTab getCurrentTab(){
+        Tab tab = currentTab.getSelectionModel().getSelectedItem();
+        if(tab instanceof WebTab){
+            return (WebTab) tab;
+        }
+        return null;
+    }
+
+    private void setNewUrl(String url){
+        WebTab tab = getCurrentTab();
+        if(tab!=null) tab.setUrl(url);
+    }
 
     /**
      * EventHandler for bar action. Getting URL and navigating to it.
@@ -24,14 +39,14 @@ public class UrlBar extends ComboBox<String> {
         e.consume();
         String url = getCurrentUrl();
         System.out.println("Navigating to url "+url);
-        currentTab.setUrl(url);
+        setNewUrl(url);
     };
 
     public void navigateToUrl(){
         if(urlContextMenuItems!=null) {
             String url = parseURL(urlContextMenuItems.get(0));
             System.out.println(url);
-            currentTab.setUrl(url);
+            setNewUrl(url);
         }
     }
 
@@ -112,7 +127,7 @@ public class UrlBar extends ComboBox<String> {
      * Navigates to the current url
      */
     public void navigate(){
-        currentTab.setUrl(getCurrentUrl());
+        setNewUrl(getCurrentUrl());
     }
 
     public UrlBar(){
@@ -122,5 +137,8 @@ public class UrlBar extends ComboBox<String> {
         addEventFilter(MouseEvent.MOUSE_CLICKED, e->getEditor().selectAll());
         addEventHandler(KeyEvent.KEY_RELEASED, keyReleased);
         setOnAction(action);
+    }
+    public void setTabPane(TabPane tab){
+        this.currentTab = tab;
     }
 }
