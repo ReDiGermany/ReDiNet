@@ -172,7 +172,7 @@ public class MainLayout extends Application {
         }
 
         initBaseLayout();
-        openAbout();
+//        openAbout();
     }
 
     /**
@@ -237,7 +237,7 @@ public class MainLayout extends Application {
      * Initializes the go button
      */
     private void initGoBtn(){
-        goBtn.setOnAction(e->urlBar.navigate());
+        goBtn.setOnAction(e->urlBar.navigateToUrl());
     }
 
     /**
@@ -554,7 +554,8 @@ public class MainLayout extends Application {
     private void updateLayoutWidth() {
         boolean urlBarChanged = false;
         double urlBarWidth = primaryStage.getWidth() - (6 * menuBtn.getWidth()) - 20
-                - (urlBarChanged ? 25 : 0)
+//                - (urlBarChanged ? 25 : 0)
+                -25
                 - 25;
 
         logger.debug("URLBAR WIDTH WILL BE "+ urlBarWidth);
@@ -567,10 +568,10 @@ public class MainLayout extends Application {
         urlContextMenu.setWidth(50);
         urlContextMenu.setPrefWidth(50);
 
-        goBtn.setVisible(urlBarChanged);
-        goBtn.setMaxWidth(urlBarChanged ?25:0);
-        goBtn.setMinWidth(urlBarChanged ?25:0);
-        goBtn.setPrefWidth(urlBarChanged ?25:0);
+        goBtn.setVisible(true);
+        goBtn.setMaxWidth(25);
+        goBtn.setMinWidth(25);
+        goBtn.setPrefWidth(25);
 
         urlBar.setWidthM(urlBarWidth);
     }

@@ -27,6 +27,15 @@ public class UrlBar extends ComboBox<String> {
         currentTab.setUrl(url);
     };
 
+    public void navigateToUrl(){
+        if(urlContextMenuItems!=null) {
+            String url = parseURL(urlContextMenuItems.get(0));
+            System.out.println(url);
+            currentTab.setUrl(url);
+        }
+    }
+
+    ArrayList<String> urlContextMenuItems;
     /**
      * EventHandler for pressed key.
      * Checks URL, loads history and fills context menu.
@@ -80,12 +89,14 @@ public class UrlBar extends ComboBox<String> {
      * @return parsed url
      */
     private String parseURL(String url){
+        System.out.println(url);
         if(url.startsWith("Go to: ")){
-            if(!url.matches("(http|https)://"))
-                url = "http://"+url.replace("Go to: ","");
+            url = url.replace("Go to: ","");
         } else if(url.startsWith("Google search: "))
             url = "https://www.google.com/search?q="+url.replace("Google search: ","");
 
+        if(!url.matches("(http|https)://"))
+            url = "http://"+url;
         return url;
     }
 
