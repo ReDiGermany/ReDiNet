@@ -408,7 +408,7 @@ public class MainLayout extends Application {
         Menu help = new Menu("Hilfe");
         help.getStyleClass().add("menuSubMenu");
         help.getItems().add(myMenuItem("Über",e->{openAbout();}));
-        help.getItems().add(myMenuItem("Github",e->{newTab("https://github.com/ReDiGermany/HOF-OOP2-ReDiNet");}));
+        help.getItems().add(myMenuItem("Github",e->{newTab("https://github.com/ReDiGermany/ReDiNet");}));
         help.getItems().add(myMenuItem("Fontawesome",e->{newTab("http://fontawesome.com/icons/");}));
         items.add(help);
 
