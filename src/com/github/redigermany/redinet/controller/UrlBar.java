@@ -3,9 +3,11 @@ package com.github.redigermany.redinet.controller;
 import com.github.redigermany.redinet.model.HistoryModel;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Cursor;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import java.util.ArrayList;
@@ -18,6 +20,8 @@ import com.github.redigermany.redinet.model.WebTab;
 public class UrlBar extends ComboBox<String> {
 
     public TabPane currentTab;
+
+    int caret = 0;
 
     private WebTab getCurrentTab(){
         Tab tab = currentTab.getSelectionModel().getSelectedItem();
@@ -43,31 +47,48 @@ public class UrlBar extends ComboBox<String> {
     };
 
     public void navigateToUrl(){
-        if(urlContextMenuItems!=null) {
-            String url = parseURL(urlContextMenuItems.get(0));
-            System.out.println(url);
+        if(autocompleteBox!=null) {
+            String url = parseURL(autocompleteBox.get(0));
+            System.out.println("navigateToUrl "+url);
             setNewUrl(url);
         }
     }
 
-    ArrayList<String> urlContextMenuItems;
+    ArrayList<String> autocompleteBox;
     /**
      * EventHandler for pressed key.
      * Checks URL, loads history and fills context menu.
      */
     private final EventHandler<? super KeyEvent> keyReleased = e->{
+        String text = getEditor().getText();
+        if(e.getCode() == KeyCode.SPACE){
+            e.consume();
+            text = text.replaceAll(" Google search: ","");
+            getEditor().setText(text);
+            getEditor().positionCaret(text.length()+1);
+            return;
+        }
+        if(e.getCode() == KeyCode.ENTER){
+            String url = getCurrentUrl();
+            System.out.println("Navigating to url (2) "+url);
+            setNewUrl(url);
+            return;
+        }
         if(e.getCode().isArrowKey()) return;
-        boolean isUrl = getEditor().getText().matches("[a-zA-Z0-9-_\\.]+\\.[a-zA-Z]+");
+        boolean isUrl = text.matches("[a-zA-Z0-9-_\\.]+\\.[a-zA-Z]+");
 
-        ArrayList<String> historyLog = HistoryModel.getInstance().search(getEditor().getText());
-        ArrayList<String> urlContextMenuItems = new ArrayList<>();
+        ArrayList<String> historyLog = HistoryModel.getInstance().search(text);
+        ArrayList<String> autocompleteBox = new ArrayList<>();
 
-        if(isUrl) urlContextMenuItems.add("Go to: "+getEditor().getText());
+        if(isUrl) autocompleteBox.add("Go to: "+text);
 
-        urlContextMenuItems.add("Google search: "+getEditor().getText());
-        urlContextMenuItems.addAll(historyLog);
-        getItems().setAll(urlContextMenuItems);
-        show();
+        autocompleteBox.add(text);
+        autocompleteBox.add("Google search: "+text);
+        autocompleteBox.addAll(historyLog);
+        getItems().setAll(autocompleteBox);
+        getEditor().setText(text);
+        getEditor().positionCaret(caret);
+        if(!isShowing()) show();
     };
 
     /**
@@ -104,14 +125,15 @@ public class UrlBar extends ComboBox<String> {
      * @return parsed url
      */
     private String parseURL(String url){
-        System.out.println(url);
         if(url.startsWith("Go to: ")){
             url = url.replace("Go to: ","");
         } else if(url.startsWith("Google search: "))
             url = "https://www.google.com/search?q="+url.replace("Google search: ","");
 
-        if(!url.matches("(http|https)://"))
-            url = "http://"+url;
+        if(!url.startsWith("http")) {
+            url = "http://" + url;
+        }
+
         return url;
     }
 
@@ -135,8 +157,10 @@ public class UrlBar extends ComboBox<String> {
         getEditor().getStyleClass().add("urlBar");
         setEditable(true);
         addEventFilter(MouseEvent.MOUSE_CLICKED, e->getEditor().selectAll());
-        addEventHandler(KeyEvent.KEY_RELEASED, keyReleased);
-        setOnAction(action);
+        setOnKeyReleased(keyReleased);
+        getEditor().caretPositionProperty().addListener(e->{
+            if(getEditor().getCaretPosition()!=0) caret = getEditor().getCaretPosition();
+        });
     }
     public void setTabPane(TabPane tab){
         this.currentTab = tab;
