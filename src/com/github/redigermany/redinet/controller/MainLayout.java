@@ -20,6 +20,7 @@ import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.web.WebHistory;
 import javafx.stage.*;
 
@@ -143,10 +144,12 @@ public class MainLayout extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+
         stage.setOnCloseRequest(e->{
             // TODO: Save tabs?
             logger.info("Close request");
         });
+
         primaryStage = stage;
         URL xml = getClass().getResource("/com/github/redigermany/redinet/view/MainLayout.fxml");
         if(xml==null){
@@ -156,12 +159,15 @@ public class MainLayout extends Application {
         FXMLLoader loader = new FXMLLoader(xml);
         loader.setController(this);
         AnchorPane page = loader.load();
-        Scene scene = new Scene(page,windowState.getWidth(),windowState.getHeight());
+        Scene scene = new Scene(page,windowState.getWidth(),windowState.getHeight(), Color.BLACK);
+
         setWindowProperties();
         addWindowListeners();
+
         stage.setTitle("ReDiNet");
         stage.setScene(scene);
         stage.show();
+
         updateLayoutWidth();
         updateLayoutHeight();
 
@@ -172,6 +178,7 @@ public class MainLayout extends Application {
         }
         urlBar.setTabPane(tabPane);
         initBaseLayout();
+        primaryStage.getIcons().add(new Image(getClass().getResource("/UI/home-solid.png").toExternalForm()));
 //        openAbout();
     }
 
@@ -456,6 +463,9 @@ public class MainLayout extends Application {
         tab.attach(new Observer() {
             @Override
             public void update(WebTab tab) {
+                if(tab.getImage()!=null){
+                    primaryStage.getIcons().set(0,new Image(tab.getImage()));
+                }
                 if(!tab.getTitle().equals("Loading...")){
                     logger.info("Tab.update(done "+tab.getTitle()+")");
                     infoBar.setVisible(false);
@@ -485,11 +495,15 @@ public class MainLayout extends Application {
         TabInfo info = new TabInfo(tab);
 //        urlBar.setSecure(info.getUrl().startsWith("https"));
         if(bc.isBookmark(info.getUrl())){
-            bookmarkBtn.setImageUrl("star-full-solid.png");
+            bookmarkBtn.setImageUrl("star-solid.svg");
         }else{
-            bookmarkBtn.setImageUrl("star-empty-solid.png");
+            bookmarkBtn.setImageUrl("star-regular.svg");
         }
         primaryStage.setTitle(info.getTitle());
+        if(tab.getImage()!=null){
+            primaryStage.getIcons().set(0,new Image(tab.getImage()));
+        }
+//        primaryStage.setTitle(info.getTitle());
         urlBar.setUrl(info.getUrl());
         if(info.getUrl().startsWith("redinet:")) return;
         if (!info.getIcon().equals("")) primaryStage.getIcons().add(new Image(info.getIcon()));
