@@ -11,14 +11,14 @@
             styleClass="root">
     <VBox>
         <HBox viewOrder="-Infinity" style="-fx-padding: 10 10 0 10;">
-            <NavigationButton fx:id="prevBtn" imageUrl="arrow-left-solid.png" />
-            <NavigationButton fx:id="forwBtn" imageUrl="arrow-right-solid.png" />
-            <NavigationButton fx:id="reloadBtn" imageUrl="arrow-reload-solid.png" />
+            <NavigationButton fx:id="prevBtn" imageUrl="arrow-left-solid.svg" />
+            <NavigationButton fx:id="forwBtn" imageUrl="arrow-right-solid.svg" />
+            <NavigationButton fx:id="reloadBtn" imageUrl="redo-solid.svg" />
             <UrlBar fx:id="urlBar" />
-            <NavigationButton fx:id="goBtn" imageUrl="directions-solid.png" />
-            <NavigationButton fx:id="homeBtn" imageUrl="home-solid.png" />
-            <NavigationButton fx:id="bookmarkBtn" imageUrl="star-empty-solid.png" />
-            <NavigationButton fx:id="menuBtn" imageUrl="menu-solid.png" />
+            <NavigationButton fx:id="goBtn" imageUrl="directions-solid.svg" />
+            <NavigationButton fx:id="homeBtn" imageHeight="12" imageUrl="home-solid.svg" />
+            <NavigationButton fx:id="bookmarkBtn" imageUrl="star-empty-solid.svg" />
+            <NavigationButton fx:id="menuBtn" imageWidth="5" imageUrl="ellipsis-v-solid.svg" />
         </HBox>
         <HBox fx:id="bookmarks"/>
         <TabPane fx:id="tabPane">
