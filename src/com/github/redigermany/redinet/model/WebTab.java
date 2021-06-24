@@ -13,18 +13,21 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebEvent;
-import javafx.scene.web.WebHistory;
-import javafx.scene.web.WebView;
+import javafx.scene.web.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -128,19 +131,10 @@ public class WebTab extends Tab {
      */
     private String getPageIcon(){
         logger.info("[PI] title found. checking icon.");
-        NodeList links = webEngine.getDocument().getElementsByTagName("link");
-        for (int i = 0; i < links.getLength(); i++) {
-            Node item = links.item(i);
-            NamedNodeMap attr = item.getAttributes();
-            for (int j = 0; j < attr.getLength(); j++) {
-                if (attr.item(j).getNodeName().equals("rel") && attr.item(j).getNodeValue().contains("icon")) {
-                    for (int k = 0; k < attr.getLength(); k++) {
-                        if (attr.item(k).getNodeName().equals("href")) {
-                            return url + "/" + attr.item(k).getNodeValue();
-                        }
-                    }
-                }
-            }
+        try {
+            return String.format("http://www.google.com/s2/favicons?domain_url=%s", URLEncoder.encode(getUrl(), "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
         return "";
     }
@@ -149,27 +143,39 @@ public class WebTab extends Tab {
      * Updates the page info. Getting page url, favicon, title, parsing local urls.
      */
     private void updatePageInformation(){
-//        logger.info("[PI] Updating Page information!");
+        logger.info("[PI] Updating Page information!");
         String location = webEngine.getLocation();
-//        logger.info("[PI] location="+location);
+        logger.info("[PI] location="+location);
         String icon="";
         title = webEngine.getTitle();
-//        logger.info("[PI] title="+title);
+        logger.info("[PI] title="+title);
         if(title!=null) {
             icon = getPageIcon();
+            this.image = icon;
+            Image favicon = new Image(icon, true);
+            ImageView iv = new ImageView(favicon);
+            iv.setStyle("-fx-margin: 0 5 0 0");
+            setGraphic(iv);
             if(!url.startsWith("http")) {
-//                logger.info("local file - setting visible url to redinet://newtab");
+                logger.info("local file - setting visible url to redinet://newtab");
                 setId("redinet://newtab:-:"+icon+":-:"+title);
             }else{
-//                logger.info("remote url");
+                logger.info("remote url");
                 setId(location+":-:"+icon+":-:"+title);
             }
         }else{
-//            logger.info("Title not found. Seems like we still loading...");
+            logger.info("Title not found. Seems like we still loading...");
             title="Loading...";
         }
-        if(image==null) setText(title);
-//        logger.info(String.format("Moved to %s %s%nTitle: %s%n%n",(local?"local":"public"),location,title));
+        if(webEngine.getTitle()!=null){
+            setTooltip(new Tooltip(title));
+            int max = 25;
+            if(max>title.length()) max = title.length();
+            String cutTitle = title.substring(0,max);
+            if(cutTitle.length()<title.length()) cutTitle+="...";
+            if(isClosable()) setText(cutTitle);
+        }
+        logger.info(String.format("Moved to %s %s%nTitle: %s%n%n",(local?"local":"public"),location,title));
         notifyAllObservers();
     }
 
@@ -264,6 +270,17 @@ public class WebTab extends Tab {
         return image;
     }
 
+    private void loadFavicon(String location, Tab tab) {
+        try {
+            String faviconUrl = String.format("http://www.google.com/s2/favicons?domain_url=%s", URLEncoder.encode(location, "UTF-8"));
+            Image favicon = new Image(faviconUrl, true);
+            ImageView iv = new ImageView(favicon);
+            setGraphic(iv);
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex); // not expected
+        }
+    }
+
     public WebTab(WindowState ws, Stage primaryStage){
         this.url = ws.getStartPage();
         this.primaryStage = primaryStage;
@@ -272,5 +289,14 @@ public class WebTab extends Tab {
 
     public WebTab(){
         initWebTab();
+    }
+
+    @Override
+    public String toString() {
+        return "WebTab{" +
+                "title='" + title + '\'' +
+                ", image='" + image + '\'' +
+                ", url='" + url + '\'' +
+                '}';
     }
 }
